@@ -1,71 +1,20 @@
-// =======================
-// 1️⃣ SERVER-SIDE CODE (Node.js)
-// =======================
+// Client-side JavaScript (script.js)
 
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const path = require("path");
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(express.static('public'));
-app.get('/', (req, res) => {
-    res.send('Hello, world! Your server is running!');
-});
-
-let buttonState = "green"; // Initial state
-
-io.on("connection", (socket) => {
-    console.log("A user connected");
-
-    // Send current button state to new user
-    socket.emit("updateButton", buttonState);
-
-    // Toggle button state
-    socket.on("toggleButton", () => {
-        buttonState = buttonState === "green" ? "red" : "green";
-        io.emit("updateButton", buttonState); // Update all clients
-    });
-
-    socket.on("disconnect", () => {
-        console.log("A user disconnected");
-    });
-});
-
-// Serve static files (index.html, styles.css)
-app.use(express.static(path.join(__dirname, "public")));
-
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// =======================
-// 2️⃣ CLIENT-SIDE CODE (Browser JavaScript)
-// =======================
-
-// This part is sent to the client when they open index.html
-const clientScript = `
+// Wait until the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
+    // Connect to the server via Socket.IO
     const socket = io();
     const button = document.getElementById("toggleButton");
 
+    // Listen for button state updates from the server
     socket.on("updateButton", (state) => {
+        // Update the button's background color based on the state
         button.style.backgroundColor = state;
     });
 
+    // Add event listener to handle button click
     button.addEventListener("click", () => {
+        // Emit an event to the server to toggle the button state
         socket.emit("toggleButton");
     });
-});
-`;
-
-// Serve the client-side JavaScript
-app.get("/script.js", (req, res) => {
-    res.setHeader("Content-Type", "application/javascript");
-    res.send(clientScript);
 });
