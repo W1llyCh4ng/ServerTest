@@ -1,33 +1,30 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const cors = require("cors");
 const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let buttonState = "green"; // Initial button state
-
-// Serve static files like your index.html
-app.use(express.static(path.join(__dirname, "public")));
-
-// Endpoint to serve index.html
+app.use(express.static('public'));
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    res.send('Hello, world! Your server is running!');
 });
 
-// Listen for connections from clients
+let buttonState = "green"; // Initial state
+
 io.on("connection", (socket) => {
     console.log("A user connected");
 
-    // Send current button state to the newly connected client
+    // Send current button state to new user
     socket.emit("updateButton", buttonState);
 
-    // Listen for button toggle from any client
+    // Toggle button state
     socket.on("toggleButton", () => {
-        buttonState = buttonState === "green" ? "red" : "green"; // Toggle state
-        io.emit("updateButton", buttonState); // Emit updated state to all clients
+        buttonState = buttonState === "green" ? "red" : "green";
+        io.emit("updateButton", buttonState); // Update all clients
     });
 
     socket.on("disconnect", () => {
@@ -35,7 +32,9 @@ io.on("connection", (socket) => {
     });
 });
 
-// Start the server
+// Serve static files (index.html, styles.css)
+app.use(express.static(path.join(__dirname, "public")));
+
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
