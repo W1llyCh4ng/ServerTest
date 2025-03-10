@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
 // Serve static files (index.html, styles.css)
 app.use(express.static(path.join(__dirname, "public")));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
